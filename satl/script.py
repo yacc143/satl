@@ -59,7 +59,6 @@ def force_at_least_one_number_per_field(size):
     """
     real = variables_real(size)
     output = []
-    print(list(real.values()))
     for field_variables in real.values():
         output.append(f'''({"|".join([v for v in field_variables[1:]])})''')
     return " & ".join(output)
@@ -94,7 +93,34 @@ def force_number_set(size, vars):
             output.append(f"(!{l1[num]}|!{l2[num]})")
     return " & ".join(output)
 
-            
+def force_sudoku_rules(size):
+    """force the row, column, and sub grids. Constraint: only 2x2 sub grids, meaning that only sizes 4 and 6 for the moment are supported
+    this heavily relies on the existing functions here.
+    """
+
+    output = []
+    sudoku = []
+    # construct the sudoku variable names as a list of list matrix
+    # and also the row based constraints.
+    for row in fields(size):
+        sudoku.append(row)
+        output.append(force_number_set(size, row))
+    
+    # now the column based constraints.
+    for column in range(size):
+        output.append(force_number_set(size, [row[column] for row in sudoku]))
+    
+    # left top:
+    # we need the first half of the rows list, and the first half of the rows
+    output.append(force_number_set(size, [v for r in sudoku[:size // 2] for v in r[:size//2]]))
+    # right top
+    output.append(force_number_set(size, [var for row in sudoku[:size // 2] for var in row[size//2:]]))
+    # left bottom:
+    # we need the second half of the rows list, and the first half of the rows
+    output.append(force_number_set(size, [var for row in sudoku[size // 2:] for var in row[:size//2]]))
+    # right bottom:
+    output.append(force_number_set(size, [var for row in sudoku[size // 2:] for var in row[size//2:]]))
+    return " & ".join(output)
 
 @click.command()
 @click.option("--size", "-s", type=int, default=4)
@@ -115,14 +141,22 @@ def main(size, limboole, studentno, assignments):
             assert 1 <= v <= size, "the value assigned are constrained by the size of the sudoku"
             assert k in variables_bases(size)
             vars[k] = v
-        print(vars)
-
+        
         real = variables_real(size)
-        print([real[k][v]for k, v in vars.items()])
+        myvars = [real[k][v]for k, v in vars.items()]
+        print(myvars)
 
-        print(force_at_least_one_number_per_field(size))
-        print(force_at_most_one_number_per_field(size))
-        print(force_number_set(size, variables_bases(size)[:size]))
+        sudoku_rules = " & ".join([force_at_least_one_number_per_field(size), force_at_most_one_number_per_field(size), force_sudoku_rules(size) ])
+        with open(f"encoding{selector}.boole", "w") as fp:
+            fp.write(sudoku_rules + "\n")
+        
+        with open(f"sudoku{selector}.boole", "w") as fp:
+            fp.write(sudoku_rules +" & " + " & ".join(myvars) + "\n")
+        
+        lastdigit = int(studentno[-1:]) % 4 + 1
+        with open(f"sudoku{selector}.boole", "w") as fp:
+            fp.write(sudoku_rules +" & " + " & ".join([var[lastdigit] for var in real.values()]) + "\n")
+
     else:
         print(f"Sudoku Field of size {size}:")
         print("-----------------------------")
