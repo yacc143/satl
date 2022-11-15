@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "satL"
+version = "0.1.0"
+description = "Solve the SATL sudoku example automatically."
+authors = ["Andreas Kostyrka"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = "^8.1.3"
+
+[tool.poetry.scripts]
+solve_sudoku = "satL/script:main"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
