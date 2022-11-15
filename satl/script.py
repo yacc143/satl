@@ -154,7 +154,7 @@ def main(size, limboole, studentno, assignments):
             fp.write(sudoku_rules +" & " + " & ".join(myvars) + "\n")
         
         lastdigit = int(studentno[-1:]) % 4 + 1
-        with open(f"sudoku{selector}.boole", "w") as fp:
+        with open(f"unsat-sudoku{selector}.boole", "w") as fp:
             fp.write(sudoku_rules +" & " + " & ".join([var[lastdigit] for var in real.values()]) + "\n")
 
     else:
