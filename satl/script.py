@@ -50,6 +50,20 @@ def variables_real(size):
         vars[v] = l
     return vars
 
+def force_at_least_one_number_per_field(size):
+    """ return a partial formula that forces that at least one digit can be switched on in a field: 
+    inspired by gc.pdf constraints item 1.
+    """
+    real = variables_real(size)
+    output = []
+    print(list(real.values()))
+    for field_variables in real.values():
+        output.append(f'''({"|".join([v for v in field_variables[1:]])})''')
+    return " & ".join(output)
+
+
+
+
 @click.command()
 @click.option("--size", "-s", type=int, default=4)
 @click.option("--limboole", default=LIMBOOLE)
@@ -72,6 +86,7 @@ def main(size, limboole, studentno, assignments):
         real = variables_real(size)
         print([real[k][v]for k, v in vars.items()])
 
+        print(force_at_least_one_number_per_field(size))
     else:
         print(f"Sudoku Field of size {size}:")
         print("-----------------------------")
